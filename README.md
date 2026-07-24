@@ -18,8 +18,8 @@ https://benzkanin41-alt.github.io/moc-export-dashboard-hs21039011/
 - Source: Thailand's Trade Statistic, Ministry of Commerce
 - Report URL: `https://tradereport.moc.go.th/th/stat/reporthscodeexport01`
 - API endpoint: `https://tradereport.moc.go.th/stat/reporthscodeexport01/result`
-- Coverage: `2021-01` to `2026-05`
-- Latest source month: `พ.ค. 2569`
+- Coverage: `2021-01` to `2026-06`
+- Latest source month: `มิ.ย. 2569`
 - Currency: THB
 - Quantity unit: KGM according to MOC source
 
@@ -27,8 +27,8 @@ https://benzkanin41-alt.github.io/moc-export-dashboard-hs21039011/
 
 The dataset was reconciled month by month between the world summary row and the sum of all country rows.
 
-- Months fetched: `65`
-- Country-month rows: `7,373`
+- Months fetched: `66`
+- Country-month rows: `7,498`
 - Max absolute value diff: `0`
 - Max absolute quantity diff: `0`
 - Missing continent mappings: none
