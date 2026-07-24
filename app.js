@@ -542,15 +542,23 @@
     const y = (value) => pad.top + (1 - (value - yMin) / (yMax - yMin)) * plotH;
     const periodTicks = series[0].points;
     const tickStep = Math.max(1, Math.ceil(periodTicks.length / 8));
+    const xTickPoints = periodTicks.filter((_, index) => index % tickStep === 0);
+    const latestTick = periodTicks[periodTicks.length - 1];
+    if (xTickPoints.length > 1 && xTickPoints[xTickPoints.length - 1] !== latestTick) {
+      // Keep the latest month visible without adding a label too close to the preceding tick.
+      xTickPoints[xTickPoints.length - 1] = latestTick;
+    }
     const yTicks = Array.from({ length: 5 }, (_, index) => yMin + ((yMax - yMin) * index) / 4);
 
     const grid = yTicks
       .map((tick) => `<line class="grid-line" x1="${pad.left}" x2="${width - pad.right}" y1="${y(tick)}" y2="${y(tick)}"></line>
         <text x="${pad.left - 8}" y="${y(tick) + 4}" text-anchor="end">${options.percent ? nf0.format(tick) + "%" : formatCompact(tick)}</text>`)
       .join("");
-    const xTicks = periodTicks
-      .filter((_, index) => index % tickStep === 0 || index === periodTicks.length - 1)
-      .map((point) => `<text x="${x(point.periodSort)}" y="${height - 28}" text-anchor="middle">${escapeHtml(point.periodLabel)}</text>`)
+    const xTicks = xTickPoints
+      .map((point, index) => {
+        const anchor = index === 0 ? "start" : index === xTickPoints.length - 1 ? "end" : "middle";
+        return `<text x="${x(point.periodSort)}" y="${height - 28}" text-anchor="${anchor}">${escapeHtml(point.periodLabel)}</text>`;
+      })
       .join("");
     const zeroLine = options.percent && yMin < 0 && yMax > 0 ? `<line class="zero-line" x1="${pad.left}" x2="${width - pad.right}" y1="${y(0)}" y2="${y(0)}"></line>` : "";
 
