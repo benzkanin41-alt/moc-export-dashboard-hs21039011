@@ -541,13 +541,16 @@
     const x = (sort) => pad.left + (xMax === xMin ? plotW / 2 : ((sort - xMin) / (xMax - xMin)) * plotW);
     const y = (value) => pad.top + (1 - (value - yMin) / (yMax - yMin)) * plotH;
     const periodTicks = series[0].points;
-    const tickStep = Math.max(1, Math.ceil(periodTicks.length / 8));
-    const xTickPoints = periodTicks.filter((_, index) => index % tickStep === 0);
-    const latestTick = periodTicks[periodTicks.length - 1];
-    if (xTickPoints.length > 1 && xTickPoints[xTickPoints.length - 1] !== latestTick) {
-      // Keep the latest month visible without adding a label too close to the preceding tick.
-      xTickPoints[xTickPoints.length - 1] = latestTick;
-    }
+    const renderedWidth = Math.max(container.clientWidth || 0, 320);
+    const minimumTickGap = 76;
+    const tickCount = Math.min(
+      periodTicks.length,
+      Math.max(2, Math.floor((renderedWidth - 56) / minimumTickGap) + 1),
+    );
+    const xTickPoints = Array.from({ length: tickCount }, (_, index) => {
+      const pointIndex = Math.round((index * (periodTicks.length - 1)) / (tickCount - 1));
+      return periodTicks[pointIndex];
+    });
     const yTicks = Array.from({ length: 5 }, (_, index) => yMin + ((yMax - yMin) * index) / 4);
 
     const grid = yTicks
