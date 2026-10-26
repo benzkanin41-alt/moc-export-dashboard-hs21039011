@@ -722,6 +722,10 @@
   function renderSourceDetails() {
     const meta = DATA.metadata;
     const validation = DATA.validation;
+    const partialPeriods = ["quarter", "year"]
+      .map((periodType) => aggregateBase(periodType, "total").find((row) => row.months.includes(meta.latestPeriod)))
+      .filter((row) => row && row.isPartial)
+      .map((row) => `${row.periodLabel} (${row.monthCount}/${row.expectedMonths} เดือน)`);
     const sourceItems = [
       ["Source", meta.source],
       ["Endpoint", meta.endpoint],
@@ -730,7 +734,7 @@
       ["HS Code", `${meta.hsCode} | version ${meta.hsVersion}`],
       ["Rows", `${validation.countryRows} country-month rows`],
       ["Reconciliation", `max value diff ${formatNumber(validation.maxAbsValueDiff, 0)} | max quantity diff ${formatNumber(validation.maxAbsQuantityDiff, 0)}`],
-      ["Current partials", `Q${Math.floor((meta.latestMonth - 1) / 3) + 1} ${toThaiYear(meta.latestYear)} และปี ${toThaiYear(meta.latestYear)} ยังไม่ครบปี`],
+      ["Current partials", partialPeriods.join(" | ") || "-"],
     ];
     els.sourceDetails.innerHTML = sourceItems
       .map((item) => `<div class="source-item"><span>${escapeHtml(item[0])}</span><strong>${escapeHtml(item[1])}</strong></div>`)
