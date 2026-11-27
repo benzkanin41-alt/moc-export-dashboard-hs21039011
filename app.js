@@ -547,19 +547,16 @@
       periodTicks.length,
       Math.max(2, Math.floor((renderedWidth - 56) / minimumTickGap) + 1),
     );
-    const xTickPoints = Array.from({ length: tickCount }, (_, index) => {
-      const pointIndex = Math.round((index * (periodTicks.length - 1)) / (tickCount - 1));
-      return periodTicks[pointIndex];
-    });
     const yTicks = Array.from({ length: 5 }, (_, index) => yMin + ((yMax - yMin) * index) / 4);
 
     const grid = yTicks
       .map((tick) => `<line class="grid-line" x1="${pad.left}" x2="${width - pad.right}" y1="${y(tick)}" y2="${y(tick)}"></line>
         <text x="${pad.left - 8}" y="${y(tick) + 4}" text-anchor="end">${options.percent ? nf0.format(tick) + "%" : formatCompact(tick)}</text>`)
       .join("");
-    const xTicks = xTickPoints
-      .map((point, index) => {
-        const anchor = index === 0 ? "start" : index === xTickPoints.length - 1 ? "end" : "middle";
+    const renderPeriodTicks = (count) => Array.from({ length: count }, (_, index) => {
+        const pointIndex = count === 1 ? 0 : Math.round((index * (periodTicks.length - 1)) / (count - 1));
+        const point = periodTicks[pointIndex];
+        const anchor = count === 1 ? "middle" : index === 0 ? "start" : index === count - 1 ? "end" : "middle";
         return `<text x="${x(point.periodSort)}" y="${height - 28}" text-anchor="${anchor}">${escapeHtml(point.periodLabel)}</text>`;
       })
       .join("");
@@ -612,12 +609,25 @@
 
     container.innerHTML = `
       <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(options.title)}">
-        <g class="axis">${grid}${xTicks}</g>
+        <g class="axis">${grid}<g class="period-axis">${renderPeriodTicks(tickCount)}</g></g>
         ${zeroLine}
         ${linePaths}
         ${legend}
       </svg>
     `;
+    // The viewBox can be narrower than the panel. Measure labels at their actual SVG positions.
+    const periodAxis = container.querySelector(".period-axis");
+    for (let count = tickCount; count > 2; count--) {
+      let previousRight = -Infinity;
+      const fits = Array.from(periodAxis.children).every((label) => {
+        const bounds = label.getBBox();
+        if (bounds.x < previousRight + 4) return false;
+        previousRight = bounds.x + bounds.width;
+        return true;
+      });
+      if (fits) break;
+      periodAxis.innerHTML = renderPeriodTicks(count - 1);
+    }
     container.querySelectorAll("[data-chart-point]").forEach((node) => {
       const selectPoint = () => {
         state.selectedChartPoints[node.dataset.chartId] = {
